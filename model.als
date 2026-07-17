@@ -45,6 +45,16 @@ fact MissaoValida {
 
   -- Para toda missão, o seu nível de dificuldade deve ser entre 1 e 5
   all m:Missao | m.nivelDificuldade >= 1 and m.nivelDificuldade <= 5
+
+  -- Para toda missão, a media do nivel dos participantes deve ser maior ou igual a dificuldade da missao
+  all m:Missao | mediaNivelParticipantes[m] >= m.nivelDificuldade
+
+  -- Para toda missão, se ela possui mais de dois participantes, então deve possuir pelo menos 2 classes distintas
+  all m:Missao | #m.participantes > 2 implies #m.participantes.classe >= 2
+}
+
+fun mediaNivelParticipantes(m:Missao): one Int {
+  div[sum m.participantes.nivel, #m.participantes]
 }
 		
 -- Se a missão possui apenas um único participante, logo ele é o líder
@@ -62,11 +72,10 @@ assert MissaoComMembrosDiferentesDaOrganizadora {
     no m: Missao | m.participantes not in m.guildaOrganizadora.membros
 }
 
+
 check MissaoSoloParticipanteLider for 5
 check MissaoComApenas5Participantes for 6
 check MissaoComMembrosDiferentesDaOrganizadora  for 6
-
-
 
 
 run example {} for 5
