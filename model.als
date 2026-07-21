@@ -17,12 +17,15 @@ sig Guilda {
 sig Missao {
 	guildaOrganizadora: one Guilda,
  	participantes: set Jogador,
-  	nivelDificuldade: one Int
+  nivelDificuldade: one Int
 }
 
 fact JogadorValido {
   -- Todo jogador deve possuir nível positivo
-	all j:Jogador | getNivelJogador[j] > 0
+	all j:Jogador | getNivelJogador[j] >= 1 and getNivelJogador[j] <= 5
+
+  -- Todo jogador deve possuir pontos de experiencia maior ou igual a 0
+  all j:Jogador | j.pontosDeExperiencia >= 0
 }
 
 fact GuildaValida{
@@ -43,7 +46,7 @@ fact MissaoValida {
 		m.guildaOrganizadora.lider in m.participantes
 
   -- Para toda missão, os participantes fazem parte da guilda organizadora e possui até no máximo 5 participantes
-  		m.participantes in m.guildaOrganizadora.membros and #m.participantes <= 5 
+  	m.participantes in m.guildaOrganizadora.membros and #m.participantes <= 5 
 
   -- Para toda missão, o seu nível de dificuldade deve ser entre 1 e 5
 		m.nivelDificuldade >= 1 and m.nivelDificuldade <= 5
@@ -61,14 +64,13 @@ fun mediaNivelParticipantes(m:Missao): one Int {
 	div[sum p: m.participantes | getNivelJogador[p], #m.participantes]
 }
 
--- Funcao que retorna o valor constante utilizado para o calculo do nivel
-fun getConstanteNivel (): one Int {
-	5
-}
-
 -- Funçao que calcula o nivel do jogador, a partir dos seus pontos de experiencia 
-fun getNivelJogador(j:Jogador) : one Int {
-	div[j.pontosDeExperiencia, getConstanteNivel]
+fun getNivelJogador(j: Jogador): one Int {
+    j.pontosDeExperiencia < 10 => 1 else
+    j.pontosDeExperiencia < 30 => 2 else
+    j.pontosDeExperiencia < 60 => 3 else
+    j.pontosDeExperiencia < 100 => 4 else
+    5
 }
 		
 -- Se a missão possui apenas um único participante, logo ele é o líder
@@ -86,14 +88,10 @@ assert MissaoComMembrosDiferentesDaOrganizadora {
 	no m: Missao | m.participantes not in m.guildaOrganizadora.membros
 }
 
--- Mais de dois participantes por missão
+ check MissaoSoloParticipanteLider for 5 but 8 Int
+ check MissaoComApenas5Participantes for 5 but 8 Int
+ check MissaoComMembrosDiferentesDaOrganizadora for 5 but 8 Int
 
+ run {} for exactly 8 Jogador, exactly 2 Guilda, exactly 3 Missao, 8 Int
 
--- check MissaoSoloParticipanteLider for 5
--- check MissaoComApenas5Participantes for 5
--- check MissaoComMembrosDiferentesDaOrganizadora  for 5
-
-
--- run {} for exactly 8 Jogador, exactly 2 Guilda, exactly 3 Missao, 6 Int
-
-run example {} for 5
+ --run {} for 5 but 8 Int
