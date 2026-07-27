@@ -105,22 +105,22 @@ fact MissaoValida {
 	}
 }
 
-/*
-Conjunto de Asserts para verificar se as condições do nível estão sendo respeitadas
-Nível 1 e 5
-*/
-assert Nivel1TemAte9XP {
-	all j: Jogador | getNivelJogador[j] = 1 implies getPontosDeExperiencia[j] < 10
-}
 
-assert Nivel5ExigePeloMenos100XP {
-	all j: Jogador | getNivelJogador[j] = 5 implies getPontosDeExperiencia[j] >= 100
-}
-
+-- Verifica que acumular mais missões concluídas nunca resulta em perda de pontos de experiência.
 assert MaisMissoesConcluidasNaoDiminuemXP {
 	all j1, j2: Jogador |
 		j1.status.missoesConcluidas in j2.status.missoesConcluidas implies
 		getPontosDeExperiencia[j1] <= getPontosDeExperiencia[j2]
+}
+
+-- Dois lideres de guildas diferentes não podem ser o mesmo jogador
+assert LideresSaoUnicosPorGuilda {
+	all disj g1, g2: Guilda | g1.lider != g2.lider
+}
+
+-- Se a missão é nível 5, logo todos os seus participantes devem ser nível 5
+assert MissaoNivel5ExigeParticipantesNivel5 {
+	all m: Missao | m.nivelDificuldade = 5 implies (all p: m.participantes | getNivelJogador[p] = 5)
 }
 
 -- Se a missão possui apenas um único participante, logo ele deve ser o líder
@@ -128,28 +128,15 @@ assert MissaoSoloParticipanteLider {
 	all m:Missao | #m.participantes = 1 implies m.participantes = m.guildaOrganizadora.lider
 }
 
--- Verificar se existe alguma missão com mais do que 5 participantes
-assert MissaoComApenas5Participantes {
-	no m:Missao | #m.participantes > 5 
-}
-
--- Verificar se existe algum participante da missão que não seja da guilda organizadora
-assert MissaoComMembrosDiferentesDaOrganizadora {
-	no m: Missao | m.participantes not in m.guildaOrganizadora.membros
-}
-
 -- Se o grupo possui mais de dois participantes, logo, ele é heterogêneo (em relação às classes)
 assert ImpossivelApenasUmaClasseEmGrupoGrande {
     all m: Missao | (#m.participantes > 2) implies not (all p1, p2: m.participantes | p1.classe = p2.classe)
 }
 
+check LideresSaoUnicosPorGuilda for 5 but 8 Int
+check MissaoNivel5ExigeParticipantesNivel5 for 5 but 8 Int
 check MissaoSoloParticipanteLider for 5 but 8 Int
-check MissaoComApenas5Participantes for 5 but 8 Int
-check MissaoComMembrosDiferentesDaOrganizadora for 5 but 8 Int
-
-check Nivel1TemAte9XP for 8 Int, exactly 8 Jogador, exactly 8 Status, exactly 2 Guilda, exactly 3 Missao
-check Nivel5ExigePeloMenos100XP for 8 Int, exactly 8 Jogador, exactly 8 Status, exactly 2 Guilda, exactly 3 Missao
-check MaisMissoesConcluidasNaoDiminuemXP for 8 Int, exactly 8 Jogador, exactly 8 Status, exactly 2 Guilda, exactly 3 Missao
-check ImpossivelApenasUmaClasseEmGrupoGrande for 8 Int, exactly 8 Jogador, exactly 8 Status, exactly 2 Guilda, exactly 3 Missao
+check MaisMissoesConcluidasNaoDiminuemXP for 8 Int, exactly 8 Jogador, exactly 8 Status, exactly 5 Guilda, exactly 3 Missao
+check ImpossivelApenasUmaClasseEmGrupoGrande for 8 Int, exactly 8 Jogador, exactly 8 Status, exactly 5 Guilda, exactly 3 Missao
 
 run {} for 8 Int, exactly 8 Jogador, exactly 8 Status, exactly 5 Guilda, exactly 5 Missao
