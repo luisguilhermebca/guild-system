@@ -138,6 +138,11 @@ assert MissaoComMembrosDiferentesDaOrganizadora {
 	no m: Missao | m.participantes not in m.guildaOrganizadora.membros
 }
 
+-- Se o grupo possui mais de dois participantes, logo, ele é heterogêneo (em relação às classes)
+assert ImpossivelApenasUmaClasseEmGrupoGrande {
+    all m: Missao | (#m.participantes > 2) implies not (all p1, p2: m.participantes | p1.classe = p2.classe)
+}
+
 check MissaoSoloParticipanteLider for 5 but 8 Int
 check MissaoComApenas5Participantes for 5 but 8 Int
 check MissaoComMembrosDiferentesDaOrganizadora for 5 but 8 Int
@@ -145,5 +150,6 @@ check MissaoComMembrosDiferentesDaOrganizadora for 5 but 8 Int
 check Nivel1TemAte9XP for 8 Int, exactly 8 Jogador, exactly 8 Status, exactly 2 Guilda, exactly 3 Missao
 check Nivel5ExigePeloMenos100XP for 8 Int, exactly 8 Jogador, exactly 8 Status, exactly 2 Guilda, exactly 3 Missao
 check MaisMissoesConcluidasNaoDiminuemXP for 8 Int, exactly 8 Jogador, exactly 8 Status, exactly 2 Guilda, exactly 3 Missao
+check ImpossivelApenasUmaClasseEmGrupoGrande for 8 Int, exactly 8 Jogador, exactly 8 Status, exactly 2 Guilda, exactly 3 Missao
 
-run {} for 8 Int, exactly 8 Jogador, exactly 8 Status, exactly 2 Guilda, exactly 3 Missao
+run {} for 8 Int, exactly 8 Jogador, exactly 8 Status, exactly 5 Guilda, exactly 5 Missao
